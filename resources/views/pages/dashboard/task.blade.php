@@ -21,7 +21,7 @@
                     {{-- <button x-on:click="open = ! open" @click="toggleDialog('add')">Add</button> --}}
                     {{-- <button x-on:click="open = ! open" @click="toggleDialog('update')">Update</button> --}}
 
-                    <div x-show="open" class="absolute mx-auto">
+                    <div x-show="open" class="fixed inset-0 flex items-center justify-center z-50">
                         <div class="bg-white p-6 rounded shadow-lg w-full max-w-md">
                             <h2 class="text-xl font-bold mb-4" x-text="mode === 'add' ? 'Add' : 'Edit'"> </h2>
                             <form @submit.prevent="submitForm">
@@ -89,10 +89,44 @@
                             </td>
                             <td class="p-2">
                                 <div class="flex justify-center">
-                                    <button @click="confirmEdit({{ $task->id }})"
-                                        class="btn bg-yellow-500 hover:bg-yellow-600 text-white mx-1">
-                                        Edit
-                                    </button>
+                                    <div x-data="{ oopen: false, mode: 'update', tasks: { title: '', description: '', completed: '' }, taskLists: [] }">
+                                        <button x-on:click="oopen = !oopen; confirmEdit({{ $task->id }}, tasks)"
+                                            class="btn bg-yellow-500 hover:bg-yellow-600 text-white mx-1">
+                                            Edit
+                                        </button>
+                                        <div x-show="oopen" class="fixed inset-0 flex items-center justify-center z-50">
+                                            <div class="bg-white p-6 rounded shadow-lg w-full max-w-md">
+                                                <h2 class="text-xl font-bold mb-4"
+                                                    x-text="mode === 'add' ? 'Add' : 'Edit'"> </h2>
+                                                <form @submit.prevent="submitForm">
+                                                    <div class="mb-4">
+                                                        <label class="block text-gray-700">Title</label>
+                                                        <input type="text" class="w-full border-gray-300 rounded"
+                                                            x-model='tasks.title' required>
+
+                                                    </div>
+                                                    <div class="mb-4">
+                                                        <label class="block text-gray-700">Description</label>
+                                                        <textarea class="w-full border-gray-300 rounded" x-model='tasks.description' required></textarea>
+
+                                                    </div>
+                                                    <div class="mb-4">
+                                                        <label class="block text-gray-700">Completed</label>
+                                                        <input type="checkbox" x-model='tasks.completed'>
+                                                        {{-- <span x-text='tasks.completed'></span> --}}
+                                                    </div>
+                                                    <div class="flex justify-end">
+                                                        <button type="button" @click="cancelForm"
+                                                            class="btn bg-gray-500 hover:bg-gray-600 text-white mx-2">Cancel</button>
+                                                        <button type="submit"
+                                                            class="btn bg-indigo-500 hover:bg-indigo-600 text-white">
+                                                            <span x-text="mode === 'add' ? 'Save' : 'Update'"></span>
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <button @click="confirmDelete({{ $task->id }})"
                                         class="btn bg-red-500 hover:bg-red-600 text-white mx-1">
                                         Delete
@@ -109,16 +143,12 @@
 
 <script>
     function toggleDialog(mode) {
-        // this.mode = mode;
         this.mode = mode;
-        this.open = true;
-        if (mode === 'add') {
-            this.tasks = { id: null, title: '', description: '', completed: false };
-        }
     }
 
     function cancelForm() {
         this.open = false;
+        this.oopen = false;
     }
     // function submitForm() {
     //     let formData = {
@@ -155,10 +185,11 @@
             _token: '{{ csrf_token() }}'
         };
 
+        console.log(taskId);
         // Determine update or create based on mode
         const url = this.mode === 'add' ? '/tasks-store' : `/tasks-update/${taskId}`;
 
-        const method = this.mode === 'add' ? 'POST' : 'PUT';
+        const method = this.mode === 'add' ? 'POST' : 'POST';
 
         fetch(url, {
                 method,
@@ -183,15 +214,22 @@
             });
     }
 
-    const confirmEdit = (taskId) => {
-        this.open = true;
+    const confirmEdit = (taskId, tasks) => {
         this.mode = 'update';
         fetch(`/tasks-edit/${taskId}`)
-            .then(task => task.json()) 
+            .then(task => task.json())
             .then(data => {
-                console.log(data.title);
-                this.tasks = data;
-                this.open = true;
+                const {
+                    title,
+                    description,
+                    completed,
+                    id
+                } = data;
+                tasks.title = title;
+                tasks.description = description;
+                tasks.completed = completed;
+                this.taskId = id;
+                this.oopen = true;
             })
             .catch(error => {
                 console.error('Error fetching task details:', error);

@@ -45,12 +45,11 @@ class TaskController extends Controller
 
     public function update(Request $request, $id)
     {
-        $task = TaskDetails::findOrFail($id);
-        $this->authorize('update', $task);
+        $task = TaskDetails::find($id);
 
         $validatedData = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'title' => 'nullable|string|max:255',
+            'description' => 'nullable',
             'completed' => 'boolean',
         ]);
 
@@ -65,16 +64,5 @@ class TaskController extends Controller
         $task->delete();
     
         return response()->json(['message' => 'Task deleted successfully']);
-    }
-
-    public function toggleComplete(TaskDetails $TaskDetails)
-    {
-        $this->authorize('update', $TaskDetails);
-
-        $TaskDetails->update([
-            'completed' => !$TaskDetails->completed,
-        ]);
-
-        return redirect()->route('taskview');
     }
 }
