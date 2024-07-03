@@ -3,7 +3,15 @@
 
         <!-- Dashboard actions -->
         <div class="sm:flex sm:justify-between sm:items-center mb-8">
-
+            {{-- <div class="flex mb-4">
+                <input type="text" x-model="searchQuery" class="w-full border-gray-300 rounded px-3 py-2 mr-2"
+                    placeholder="Search by title or description">
+                <select x-model="filterStatus" class="border-gray-300 rounded px-3 py-2">
+                    <option value="">All</option>
+                    <option value="true">Completed</option>
+                    <option value="false">Uncompleted</option>
+                </select>
+            </div> --}}
             <!-- Right: Actions -->
             <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
 
@@ -185,7 +193,6 @@
             _token: '{{ csrf_token() }}'
         };
 
-        console.log(taskId);
         // Determine update or create based on mode
         const url = this.mode === 'add' ? '/tasks-store' : `/tasks-update/${taskId}`;
 
@@ -254,4 +261,7 @@
                 });
         }
     }
+
+    
+
 </script>

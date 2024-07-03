@@ -32,13 +32,13 @@ class TaskController extends Controller
 
         $TaskDetails->save();
 
-        return redirect()->route('taskview');
+        // return redirect()->route('taskview');
+        return response()->json($TaskDetails);
     }
 
     public function edit($id)
     {
         $task = TaskDetails::find($id);
-        // $this->authorize('view', $task);
 
         return response()->json($task);
     }
